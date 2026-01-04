@@ -103,12 +103,15 @@ export function calculateMonthlyStats(activities: Activity[]): MonthlyStat[] {
   const grouped = groupBy(activities, (a: Activity) => formatMonth(a.活动开始时间));
 
   return Object.entries(grouped)
-    .map(([month, acts]: [string, Activity[]]) => ({
-      月份: month,
-      总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
-      次数: acts.length,
-      平均: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length,
-    }))
+    .map(([month, acts]) => {
+      const actsList = acts as Activity[];
+      return {
+        月份: month,
+        总花费: actsList.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
+        次数: actsList.length,
+        平均: actsList.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / actsList.length,
+      };
+    })
     .sort((a, b) => a.月份.localeCompare(b.月份));
 }
 
@@ -118,13 +121,16 @@ export function calculateVenueStats(activities: Activity[]): VenueStat[] {
   const totalActivities = activities.length;
 
   return Object.entries(grouped)
-    .map(([venue, acts]: [string, Activity[]]) => ({
-      场馆名称: venue,
-      总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
-      次数: acts.length,
-      平均: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length,
-      占比: (acts.length / totalActivities) * 100,
-    }))
+    .map(([venue, acts]) => {
+      const actsList = acts as Activity[];
+      return {
+        场馆名称: venue,
+        总花费: actsList.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
+        次数: actsList.length,
+        平均: actsList.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / actsList.length,
+        占比: (actsList.length / totalActivities) * 100,
+      };
+    })
     .sort((a, b) => b.次数 - a.次数);
 }
 
@@ -159,11 +165,14 @@ export function calculateQuarterlyStats(
   const grouped = groupBy(activities, (a: Activity) => formatQuarter(a.活动开始时间));
 
   return Object.entries(grouped)
-    .map(([quarter, acts]: [string, Activity[]]) => ({
-      季度: quarter,
-      总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
-      次数: acts.length,
-      平均: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length,
-    }))
+    .map(([quarter, acts]) => {
+      const actsList = acts as Activity[];
+      return {
+        季度: quarter,
+        总花费: actsList.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
+        次数: actsList.length,
+        平均: actsList.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / actsList.length,
+      };
+    })
     .sort((a, b) => a.季度.localeCompare(b.季度));
 }

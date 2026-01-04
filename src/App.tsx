@@ -10,7 +10,7 @@ import {
   calculateWeekdayStats,
   calculateQuarterlyStats,
 } from './features/transform/calculateStats';
-import { Upload, FileSpreadsheet, TrendingUp, Calendar, MapPin, Activity, Link } from 'lucide-react';
+import { Upload, TrendingUp, Calendar, MapPin, Activity, Link } from 'lucide-react';
 import { formatCurrency } from './lib/utils';
 
 function App() {

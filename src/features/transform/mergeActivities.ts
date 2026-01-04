@@ -1,7 +1,6 @@
 import type { OrderRow, Activity } from '../../types/order';
 import dayjs from 'dayjs';
 import { VENUE_KEYWORDS } from '../../lib/constants';
-import { formatMonth } from '../../lib/utils';
 
 // 过滤订单：只保留已完成的订单
 export function filterOrders(orders: OrderRow[]) {
