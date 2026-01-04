@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { AnalysisResult } from './types/order';
 import { parseExcelFile } from './features/upload/excelParser';
 import { fetchExcelFromURL } from './features/upload/fetchExcel';
@@ -10,8 +10,19 @@ import {
   calculateWeekdayStats,
   calculateQuarterlyStats,
 } from './features/transform/calculateStats';
-import { Upload, TrendingUp, Calendar, MapPin, Activity, Link } from 'lucide-react';
+import { Upload, TrendingUp, Calendar, MapPin, Activity, Link, BarChart3, PieChart, CalendarDays, Heart } from 'lucide-react';
 import { formatCurrency } from './lib/utils';
+import { Tabs, Tab } from './components/Tabs';
+import {
+  MonthlyTrendChart,
+  VenuePieChart,
+  WeekdayBarChart,
+  HealthRadialChart,
+  toMonthlyPoints,
+  toVenueSlices,
+  toWeekdayPoints,
+  toHealthGauge,
+} from './components/charts';
 
 function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -19,6 +30,27 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [urlInput, setUrlInput] = useState('');
+
+  // 使用 useMemo 优化数据转换性能 (必须在组件顶层)
+  const monthlyData = useMemo(
+    () => (result ? toMonthlyPoints(result.monthlyStats) : []),
+    [result]
+  );
+  const venueData = useMemo(
+    () => (result ? toVenueSlices(result.venueStats) : []),
+    [result]
+  );
+  const weekdayData = useMemo(
+    () => (result ? toWeekdayPoints(result.weekdayStats) : []),
+    [result]
+  );
+  const healthGauge = useMemo(
+    () =>
+      result
+        ? toHealthGauge(result.statistics)
+        : { label: '', value: 0, weeklyAvg: 0 },
+    [result]
+  );
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -334,66 +366,21 @@ function App() {
               />
             </div>
 
-            {/* Detailed Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Monthly Stats */}
-              <StatsCard
-                title="月度统计"
-                items={result.monthlyStats.map(s => ({
-                  label: s.月份,
-                  value: `${s.次数}次`,
-                  amount: formatCurrency(s.总花费)
-                }))}
-              />
-
-              {/* Venue Stats */}
-              <StatsCard
-                title="场地分布"
-                items={result.venueStats.map(s => ({
-                  label: s.场馆名称,
-                  value: `${s.次数}次 (${s.占比.toFixed(1)}%)`,
-                  amount: formatCurrency(s.总花费)
-                }))}
-              />
-
-              {/* Weekday Stats */}
-              <StatsCard
-                title="周几习惯"
-                items={result.weekdayStats.map(s => ({
-                  label: s.星期,
-                  value: `${s.次数}次 (${s.占比.toFixed(1)}%)`,
-                  amount: formatCurrency(s.总花费)
-                }))}
-              />
-
-              {/* Health Summary */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">💪 健康评价</h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-gray-600">评级：</span>
-                    <span className="text-2xl font-bold text-green-600 ml-2">
-                      {result.statistics.健康等级}
-                    </span>
-                  </div>
-                  <p className="text-gray-600">{result.statistics.健康评语}</p>
-                  <div className="border-t pt-3 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">累计运动时长</span>
-                      <span className="font-medium">{result.statistics.累计运动时长}小时</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">消耗卡路里</span>
-                      <span className="font-medium">{result.statistics.消耗卡路里.toLocaleString()}千卡</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">燃烧脂肪</span>
-                      <span className="font-medium text-orange-600">{result.statistics.燃烧脂肪.toFixed(1)}公斤</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* 📊 Chart Dashboard with Tabs */}
+            <Tabs>
+              <Tab label="月度趋势" icon={<BarChart3 />}>
+                <MonthlyTrendChart data={monthlyData} />
+              </Tab>
+              <Tab label="场地分布" icon={<PieChart />}>
+                <VenuePieChart data={venueData} />
+              </Tab>
+              <Tab label="周几习惯" icon={<CalendarDays />}>
+                <WeekdayBarChart data={weekdayData} />
+              </Tab>
+              <Tab label="健康评级" icon={<Heart />}>
+                <HealthRadialChart gauge={healthGauge} />
+              </Tab>
+            </Tabs>
 
             {/* Reset Button */}
             <div className="text-center">
@@ -431,26 +418,6 @@ function MetricCard({
       </div>
       <div className="text-2xl font-bold text-gray-800">{value}</div>
       <div className="text-sm text-gray-500 mt-1">{subtext}</div>
-    </div>
-  );
-}
-
-// Stats Card Component
-function StatsCard({ title, items }: { title: string; items: Array<{ label: string; value: string; amount: string }> }) {
-  return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
-      <div className="space-y-2 max-h-64 overflow-y-auto">
-        {items.map((item, idx) => (
-          <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-            <div>
-              <div className="font-medium text-gray-800">{item.label}</div>
-              <div className="text-sm text-gray-500">{item.value}</div>
-            </div>
-            <div className="text-green-600 font-semibold">{item.amount}</div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

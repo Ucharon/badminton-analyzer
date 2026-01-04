@@ -17,29 +17,41 @@
 ### 本地开发
 
 ```bash
-# 安装依赖
+# 1. 安装依赖
 npm install
 
-# 启动开发服务器（仅前端，无API代理）
-npm run dev
-
-# 启动Vercel本地开发环境（前端+API代理，支持URL分析）
+# 2. 安装Vercel CLI（如需URL分析功能）
 npm install -g vercel
+
+# 3. 启动开发环境（推荐方式）
+# 终端1：启动Vercel开发服务器（API代理）
 vercel dev
+
+# 终端2：启动Vite前端服务器
+npm run dev
 ```
 
-访问 http://localhost:3000 (vercel dev) 或 http://localhost:5173 (npm run dev)
+**访问地址：**
+- 前端页面：http://localhost:5173
+- API代理：http://localhost:3000/api/fetch-excel
+
+**简化启动（仅测试文件上传）：**
+```bash
+# 只启动前端，URL分析功能不可用
+npm run dev
+```
 
 ### 使用方法
 
-**方式1：上传本地Excel文件**
+**方式1：上传本地Excel文件** ✅ 推荐
 1. 点击上传区域或拖拽Excel文件
 2. 系统自动解析并显示分析结果
 
-**方式2：通过URL分析**
-1. 在URL输入框中粘贴Excel文件链接
-2. 点击"分析"按钮
-3. 系统通过代理下载并分析文件（需要vercel dev或部署后使用）
+**方式2：通过URL分析** （需要 `vercel dev` 运行）
+1. 确保已启动 `vercel dev` (监听3000端口)
+2. 在URL输入框中粘贴Excel文件链接
+3. 点击"分析"按钮
+4. 系统通过本地API代理下载并分析文件
 
 ## 📁 项目结构
 

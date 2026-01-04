@@ -72,6 +72,14 @@ export function parseExcelFile(file: File): Promise<ParseResult> {
 
             // 验证出款/入款字段
             const direction = row['出款/入款'];
+            const settlementStatus = row['结算状态'];
+
+            // 如果是已退款订单且出款/入款字段为空，直接跳过（退款后系统会清空此字段）
+            if (!direction && settlementStatus === '已退款') {
+              return; // 静默跳过已退款的空值订单
+            }
+
+            // 其他情况下，出款/入款必须是有效值
             if (direction !== '出款(-)' && direction !== '入款(+)') {
               warnings.push(`第${index + 2}行: 出款/入款字段值无效: ${direction}`);
               return;

@@ -1,27 +1,12 @@
 import { parseExcelFile, type ParseResult } from './excelParser';
 
-// 获取代理API基础URL
-const getProxyBaseUrl = () => {
-  // 开发环境：使用第三方CORS代理（临时）
-  // 生产环境：使用Vercel部署的API
-  if (import.meta.env.DEV) {
-    return 'https://api.allorigins.win/raw';
-  }
-  return import.meta.env.VITE_PROXY_BASE || '/api';
-};
-
-// 从URL获取Excel文件（通过代理）
+// 从URL获取Excel文件（通过本地/云端API代理）
 export async function fetchExcelFromURL(url: string): Promise<ParseResult> {
   try {
-    let proxyUrl: string;
-
-    if (import.meta.env.DEV) {
-      // 开发环境：使用第三方CORS代理
-      proxyUrl = `${getProxyBaseUrl()}?url=${encodeURIComponent(url)}`;
-    } else {
-      // 生产环境：使用Vercel API代理
-      proxyUrl = `${getProxyBaseUrl()}/fetch-excel?url=${encodeURIComponent(url)}`;
-    }
+    // 开发和生产环境统一使用 /api 路径
+    // 开发环境: Vite proxy -> vercel dev (localhost:3000)
+    // 生产环境: Vercel Serverless API
+    const proxyUrl = `/api/fetch-excel?url=${encodeURIComponent(url)}`;
 
     const response = await fetch(proxyUrl);
 
