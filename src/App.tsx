@@ -10,7 +10,7 @@ import {
   calculateWeekdayStats,
   calculateQuarterlyStats,
 } from './features/transform/calculateStats';
-import { Upload, TrendingUp, Calendar, MapPin, Activity, Link, BarChart3, PieChart, CalendarDays, Heart } from 'lucide-react';
+import { Upload, TrendingUp, Calendar, MapPin, Activity, Link, BarChart3, PieChart, CalendarDays, Heart, Users } from 'lucide-react';
 import { formatCurrency } from './lib/utils';
 import { Tabs, Tab } from './components/Tabs';
 import {
@@ -339,12 +339,12 @@ function App() {
         {result && (
           <div className="space-y-6">
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <MetricCard
                 icon={<TrendingUp className="text-green-600" />}
                 label="实际净花费"
                 value={formatCurrency(result.statistics.实际净花费)}
-                subtext={`${result.statistics.有效活动次数}次活动`}
+                subtext={`${result.statistics.有效活动次数}次活动 (${result.statistics.总参与次数}次参与)`}
               />
               <MetricCard
                 icon={<Calendar className="text-blue-600" />}
@@ -363,6 +363,12 @@ function App() {
                 label="最爱场地"
                 value={result.venueStats[0]?.场馆名称 || '-'}
                 subtext={`${result.venueStats[0]?.次数 || 0}次`}
+              />
+              <MetricCard
+                icon={<Users className="text-pink-600" />}
+                label="帮报名达人"
+                value={`${result.statistics.帮报名活动数}次`}
+                subtext={`平均${result.statistics.平均名额倍数.toFixed(2)}x名额`}
               />
             </div>
 

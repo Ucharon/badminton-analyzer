@@ -43,6 +43,8 @@ export interface Activity {
   包含少补支付: boolean;
   订单详情: string[];
   活动类型?: string; // 场馆类型
+  报名名额数: number; // 实际报名的名额数量（拆分后）
+  是否多人报名: boolean; // 是否帮别人报名（名额数>1）
 }
 
 // 统计数据类型
@@ -57,6 +59,11 @@ export interface Statistics {
   单次最高: number;
   单次最低: number;
   订单活动比: number;
+
+  // 多人报名统计
+  总参与次数: number; // 按名额数统计
+  帮报名活动数: number; // 名额数>1的活动数
+  平均名额倍数: number; // 总参与次数 / 有效活动次数
 
   // 时间统计
   活动天数: number;

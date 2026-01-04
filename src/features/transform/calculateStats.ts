@@ -33,6 +33,22 @@ export function calculateStatistics(
   const maxAmount = Math.max(...amounts);
   const minAmount = Math.min(...amounts);
 
+  // 多人报名统计
+  const multiRegistrationActivities = activities.filter((a) => a.是否多人报名);
+  const totalParticipations = activities.length; // 按名额拆分后，每条记录就是1次参与
+  const helpRegistrationCount = multiRegistrationActivities.length;
+
+  // 计算平均名额倍数（去重计算原始活动组）
+  const uniqueActivityGroups = new Map<string, number>();
+  activities.forEach((a) => {
+    // 提取原始活动ID（去掉_slot后缀）
+    const baseId = a.活动ID.replace(/_slot\d+$/, '');
+    uniqueActivityGroups.set(baseId, a.报名名额数);
+  });
+
+  const actualActivityCount = uniqueActivityGroups.size;
+  const averageSlotMultiplier = totalActivities / actualActivityCount;
+
   // 计算活动天数
   const uniqueDates = new Set(
     activities.map((a) => dayjs(a.活动开始时间).format('YYYY-MM-DD'))
@@ -76,7 +92,7 @@ export function calculateStatistics(
 
   return {
     总订单数: 0, // 由外部填充
-    有效活动次数: totalActivities,
+    有效活动次数: actualActivityCount, // 原始活动组数（未拆分前）
     出款总额: totalOutgoing,
     入款总额: totalIncoming,
     实际净花费: netSpent,
@@ -84,6 +100,9 @@ export function calculateStatistics(
     单次最高: maxAmount,
     单次最低: minAmount,
     订单活动比: 0, // 由外部填充
+    总参与次数: totalParticipations, // 按名额拆分后的总次数
+    帮报名活动数: helpRegistrationCount, // 名额数>1的活动数
+    平均名额倍数: averageSlotMultiplier, // 平均每次活动报几个名额
     活动天数: activityDays,
     最活跃月份: mostActiveMonth.月份,
     最活跃月份次数: mostActiveMonth.次数,
