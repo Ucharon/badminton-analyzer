@@ -1,6 +1,6 @@
 import type { OrderRow, Activity } from '../../types/order';
 import dayjs from 'dayjs';
-import { VENUE_KEYWORDS } from '../../lib/constants';
+import { VENUE_ALIASES } from '../../lib/constants';
 
 // 过滤订单：只保留已完成的订单
 export function filterOrders(orders: OrderRow[]) {
@@ -72,16 +72,28 @@ export function mergeActivities(orders: OrderRow[]): Activity[] {
   );
 }
 
-// 识别活动类型（场馆）
+// 识别活动类型（场馆）- 改进版
 export function extractActivityType(title: string): string {
   if (!title) return '其他活动';
 
-  const titleLower = title.toLowerCase().replace(/\s+/g, '');
+  const normalized = title.replace(/\s+/g, '');
+  const normalizedLower = normalized.toLowerCase();
 
-  for (const [venueName, keywords] of Object.entries(VENUE_KEYWORDS)) {
-    for (const keyword of keywords) {
-      if (titleLower.includes(keyword.toLowerCase())) {
-        return getVenueDisplayName(venueName);
+  // 策略1: 优先解析【组织者·场馆】格式
+  const dotMatch = normalized.match(/【([^·】]+)·([^】]+)】/);
+  if (dotMatch) {
+    const venueRaw = dotMatch[2]; // 提取"·"右侧的场馆名
+    const venue = mapVenueAlias(venueRaw);
+    if (venue !== '其他活动') {
+      return venue;
+    }
+  }
+
+  // 策略2: 如果没有格式，使用关键词匹配
+  for (const [standardName, aliases] of Object.entries(VENUE_ALIASES)) {
+    for (const alias of aliases) {
+      if (normalizedLower.includes(alias.toLowerCase())) {
+        return standardName;
       }
     }
   }
@@ -89,18 +101,18 @@ export function extractActivityType(title: string): string {
   return '其他活动';
 }
 
-// 获取场馆显示名称
-function getVenueDisplayName(key: string): string {
-  const displayNames: Record<string, string> = {
-    润羽: '润羽（海润C馆）',
-    羽跃: '羽跃羽毛球馆',
-    全羽汇: '全羽汇羽毛球馆',
-    建安: '建安羽毛球馆',
-    盛羽: '西乡盛羽球馆',
-    翼羽: '翼羽（阳光文体）',
-    RUN俱乐部: 'RUN+俱乐部',
-    体育中心: '体育中心场馆',
-  };
+// 将场馆原始名称映射到标准名称
+function mapVenueAlias(venueRaw: string): string {
+  const venueLower = venueRaw.toLowerCase();
 
-  return displayNames[key] || key;
+  for (const [standardName, aliases] of Object.entries(VENUE_ALIASES)) {
+    for (const alias of aliases) {
+      if (venueLower.includes(alias.toLowerCase())) {
+        return standardName;
+      }
+    }
+  }
+
+  return '其他活动';
 }
+
