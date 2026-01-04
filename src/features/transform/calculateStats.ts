@@ -100,29 +100,29 @@ export function calculateStatistics(
 
 // 计算月度统计
 export function calculateMonthlyStats(activities: Activity[]): MonthlyStat[] {
-  const grouped = groupBy(activities, (a) => formatMonth(a.活动开始时间));
+  const grouped = groupBy(activities, (a: Activity) => formatMonth(a.活动开始时间));
 
   return Object.entries(grouped)
-    .map(([month, acts]) => ({
+    .map(([month, acts]: [string, Activity[]]) => ({
       月份: month,
-      总花费: acts.reduce((sum, a) => sum + a.总金额, 0),
+      总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
       次数: acts.length,
-      平均: acts.reduce((sum, a) => sum + a.总金额, 0) / acts.length,
+      平均: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length,
     }))
     .sort((a, b) => a.月份.localeCompare(b.月份));
 }
 
 // 计算场馆统计
 export function calculateVenueStats(activities: Activity[]): VenueStat[] {
-  const grouped = groupBy(activities, (a) => a.活动类型 || '其他活动');
+  const grouped = groupBy(activities, (a: Activity) => a.活动类型 || '其他活动');
   const totalActivities = activities.length;
 
   return Object.entries(grouped)
-    .map(([venue, acts]) => ({
+    .map(([venue, acts]: [string, Activity[]]) => ({
       场馆名称: venue,
-      总花费: acts.reduce((sum, a) => sum + a.总金额, 0),
+      总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
       次数: acts.length,
-      平均: acts.reduce((sum, a) => sum + a.总金额, 0) / acts.length,
+      平均: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length,
       占比: (acts.length / totalActivities) * 100,
     }))
     .sort((a, b) => b.次数 - a.次数);
@@ -130,7 +130,7 @@ export function calculateVenueStats(activities: Activity[]): VenueStat[] {
 
 // 计算周几统计
 export function calculateWeekdayStats(activities: Activity[]): WeekdayStat[] {
-  const grouped = groupBy(activities, (a) => {
+  const grouped = groupBy(activities, (a: Activity) => {
     const dayName = dayjs(a.活动开始时间).format('dddd') as keyof typeof WEEKDAY_MAP;
     return WEEKDAY_MAP[dayName] || dayName;
   });
@@ -140,12 +140,12 @@ export function calculateWeekdayStats(activities: Activity[]): WeekdayStat[] {
 
   return weekdayOrder
     .map((weekday) => {
-      const acts = grouped[weekday] || [];
+      const acts = (grouped[weekday] || []) as Activity[];
       return {
         星期: weekday,
-        总花费: acts.reduce((sum, a) => sum + a.总金额, 0),
+        总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
         次数: acts.length,
-        平均: acts.length > 0 ? acts.reduce((sum, a) => sum + a.总金额, 0) / acts.length : 0,
+        平均: acts.length > 0 ? acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length : 0,
         占比: (acts.length / totalActivities) * 100,
       };
     })
@@ -156,14 +156,14 @@ export function calculateWeekdayStats(activities: Activity[]): WeekdayStat[] {
 export function calculateQuarterlyStats(
   activities: Activity[]
 ): QuarterlyStat[] {
-  const grouped = groupBy(activities, (a) => formatQuarter(a.活动开始时间));
+  const grouped = groupBy(activities, (a: Activity) => formatQuarter(a.活动开始时间));
 
   return Object.entries(grouped)
-    .map(([quarter, acts]) => ({
+    .map(([quarter, acts]: [string, Activity[]]) => ({
       季度: quarter,
-      总花费: acts.reduce((sum, a) => sum + a.总金额, 0),
+      总花费: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0),
       次数: acts.length,
-      平均: acts.reduce((sum, a) => sum + a.总金额, 0) / acts.length,
+      平均: acts.reduce((sum: number, a: Activity) => sum + a.总金额, 0) / acts.length,
     }))
     .sort((a, b) => a.季度.localeCompare(b.季度));
 }
